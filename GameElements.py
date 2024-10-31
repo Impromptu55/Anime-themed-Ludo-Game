@@ -33,9 +33,12 @@ class piece:
             pygame.display.update()
             time.sleep(0.5)
             self.sound.play()
-        self.current_pos = self.position[dice_number]
-        self.position = self.position[dice_number:]
-        self.sound.play()
+        try:
+            self.current_pos = self.position[dice_number]
+            self.position = self.position[dice_number:]
+            self.sound.play()
+        except IndexError as i:
+            print(f"{i} has occurred but program will run!")
 
 
 
