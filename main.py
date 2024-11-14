@@ -1,4 +1,4 @@
-import pygame   #Importing modules
+import pygame   #Importing modules   
 import time
 import random
 import os
@@ -6,6 +6,7 @@ from pygame import mixer
 from GameElements import piece, Dice  
 pygame.init()
 
+#I CHANGED THE DICE RANDINT NUMBERS 
 
 win = pygame.display.set_mode((700,600))
 pygame.display.set_caption("Kasy's Ludo Game")
@@ -21,6 +22,7 @@ gojo = pygame.image.load(os.path.join("Assets","images","gojopic.jpg"))
 dice_sound = mixer.Sound(os.path.join("Assets", "sounds","dice-on-a-wooden-floor-87441.mp3"))
 kill_sound = mixer.Sound(os.path.join("Assets","sounds","thump-105302.mp3"))
 movement_sound = mixer.Sound(os.path.join("Assets","sounds","Token Movement.wav"))
+font = pygame.font.SysFont("comicsans", 16)
 
 
 
@@ -47,20 +49,20 @@ green_positions = [(240,520), (240,480), (240,440), (240,400), (240,360), (200,3
 first_die = Dice(win, (240,270), number)
 second_die = Dice(win, (300,270), second_number)
 
-blue_piece1 = piece("purple", (40,40), win, os.path.join("Assets","images", "blue.png"), blue_positions, movement_sound)
-blue_piece2 = piece("purple", (40,120), win, os.path.join("Assets","images", "blue.png"), blue_positions, movement_sound)
-blue_piece3 = piece("purple", (120,40), win, os.path.join("Assets","images", "blue.png"), blue_positions, movement_sound)
-blue_piece4 = piece("purple", (120,120), win, os.path.join("Assets","images", "blue.png"), blue_positions, movement_sound)
+blue_piece1 = piece("blue", (40,40), win, os.path.join("Assets","images", "blue.png"), blue_positions, movement_sound)
+blue_piece2 = piece("blue", (40,120), win, os.path.join("Assets","images", "blue.png"), blue_positions, movement_sound)
+blue_piece3 = piece("blue", (120,40), win, os.path.join("Assets","images", "blue.png"), blue_positions, movement_sound)
+blue_piece4 = piece("blue", (120,120), win, os.path.join("Assets","images", "blue.png"), blue_positions, movement_sound)
 
-green_piece1 = piece("purple", (40,400), win, os.path.join("Assets", "images", "green.png"), green_positions, movement_sound)
-green_piece2 = piece("purple", (120,400), win, os.path.join("Assets", "images", "green.png"), green_positions, movement_sound)
-green_piece3 = piece("purple", (40,480), win, os.path.join("Assets", "images", "green.png"), green_positions, movement_sound)
-green_piece4 = piece("purple", (120,480), win, os.path.join("Assets", "images", "green.png"), green_positions, movement_sound)
+green_piece1 = piece("green", (40,400), win, os.path.join("Assets", "images", "green.png"), green_positions, movement_sound)
+green_piece2 = piece("green", (120,400), win, os.path.join("Assets", "images", "green.png"), green_positions, movement_sound)
+green_piece3 = piece("green", (40,480), win, os.path.join("Assets", "images", "green.png"), green_positions, movement_sound)
+green_piece4 = piece("green", (120,480), win, os.path.join("Assets", "images", "green.png"), green_positions, movement_sound)
 
-yellow_piece1 = piece("purple", (400,40), win, os.path.join("Assets", "images", "yellow.png"), yellow_positions, movement_sound)
-yellow_piece2 = piece("purple", (480,40), win, os.path.join("Assets", "images", "yellow.png"), yellow_positions, movement_sound)
-yellow_piece3 = piece("purple", (400,120), win, os.path.join("Assets", "images", "yellow.png"), yellow_positions, movement_sound)
-yellow_piece4 = piece("purple", (480,120), win, os.path.join("Assets", "images", "yellow.png"), yellow_positions, movement_sound)
+yellow_piece1 = piece("yellow", (400,40), win, os.path.join("Assets", "images", "yellow.png"), yellow_positions, movement_sound)
+yellow_piece2 = piece("yellow", (480,40), win, os.path.join("Assets", "images", "yellow.png"), yellow_positions, movement_sound)
+yellow_piece3 = piece("yellow", (400,120), win, os.path.join("Assets", "images", "yellow.png"), yellow_positions, movement_sound)
+yellow_piece4 = piece("yellow", (480,120), win, os.path.join("Assets", "images", "yellow.png"), yellow_positions, movement_sound)
 
 purple_piece1 = piece("purple", (400,400), win, os.path.join("Assets", "images", "purple.png"), purple_positions, movement_sound)
 purple_piece2 = piece("purple", (480,400), win, os.path.join("Assets", "images", "purple.png"), purple_positions, movement_sound)
@@ -76,11 +78,26 @@ purple_pieces = [purple_piece1,purple_piece2, purple_piece3, purple_piece4]
 
 # blue_piece = piece("purple", (40,40), win, "purple.png", blue_positions, movement_sound)
 
-turns = {1: "blue", 2:"yellow", 3:"purple", 4:"green"}
-current_player = turns[1]
+turns = ["blue", "yellow", "purple", "green"]
+current_player = 0
+dice_rolled = False
 
 
+def next_turn():
+    global current_player, next_player
+    next_player = turns[current_player]
+    current_player = (current_player + 1) % 4
+
+
+
+    
 pieces = [blue_pieces, yellow_pieces, green_pieces, purple_pieces]
+
+def check_piece_home():
+    for all_pieces in pieces:
+        for each_piece in all_pieces:
+            if each_piece.current_pos != each_piece.init_pos:
+                each_piece.home = False
 
 def handle_all_blits():
     win.fill("black")
@@ -92,22 +109,172 @@ def handle_all_blits():
     for all_pieces in pieces:
         for each_piece in all_pieces:
             each_piece.create_piece()
+    font = pygame.font.SysFont("comicsans", 16)
+    text = font.render(f"{next_player}'s turn", 1, "black")
+    text_rect = text.get_rect(topleft=(610, 0))
+    demo_text = font.render(str(dice_rolled), 1, "black")
+    demo_text_rect = demo_text.get_rect(topleft=(610,30))
+    win.blit(text, text_rect)
+    win.blit(demo_text, demo_text_rect)
+    # pygame.display.update(text_rect)      
+    
 
 
+counter = 0
 def handle_piece_movements():
-    for all_pieces in pieces:
-        for each_piece in all_pieces:
-            if  mouse_pos[0] >= each_piece.current_pos[0] and mouse_pos[0] <= each_piece.current_pos[0] + 31:
-                if mouse_pos[1] >= each_piece.current_pos[1] and mouse_pos[1] <= each_piece.current_pos[1] + 31:
-                    number_to_move = first_die.get_number() - 1
-                    each_piece.move(number_to_move, board)
-                    # pygame.display.update()
+    global counter, dice_rolled
+    if next_player == "blue" and dice_rolled == True:
+        for each_piece in blue_pieces:
+            if  mouse_pos[0] >= each_piece.current_pos[0] and mouse_pos[0] <= each_piece.current_pos[0] + 40:
+                if mouse_pos[1] >= each_piece.current_pos[1] and mouse_pos[1] <= each_piece.current_pos[1] + 40:
+                    if each_piece.home == True:
+                        if first_die.get_number() == 6 and second_die.get_number() != 6:
+                            each_piece.
+                    if each_piece.taken_die == False:         #normal movements when not in home
+                        counter += 1
+                        if counter == 2:
+                            number_to_move = second_die.get_number() - 1
+                            each_piece.move(number_to_move, board, pieces, first_die, second_die)
+                            next_turn()
+                            dice_rolled = False 
+                            counter = 0
+                            break
+                        number_to_move = first_die.get_number() - 1
+                        each_piece.move(number_to_move, board, pieces, first_die, second_die)
+                        each_piece.taken_die = True
+                        break
+                    elif each_piece.taken_die == True:
+                        counter += 1
+                        number_to_move = second_die.get_number() - 1
+                        each_piece.move(number_to_move, board, pieces, first_die, second_die)
+                        each_piece.taken_die_again = True
+                        if each_piece.taken_die == True and each_piece.taken_die_again == True:
+                            next_turn()
+                            each_piece.taken_die = False
+                            each_piece.taken_die_again = False
+                            dice_rolled = False
+                            counter = 0
+                            break
+                        if counter == 2:
+                            next_turn()
+                            dice_rolled = False
+                            counter = 0
+                        each_piece.taken_die = False
+                        break
 
+    if next_player == "yellow" and dice_rolled == True:
+        for each_piece in yellow_pieces:
+            if  mouse_pos[0] >= each_piece.current_pos[0] and mouse_pos[0] <= each_piece.current_pos[0] + 40:
+                if mouse_pos[1] >= each_piece.current_pos[1] and mouse_pos[1] <= each_piece.current_pos[1] + 40:
+                    if each_piece.taken_die == False:
+                        counter += 1
+                        if counter == 2:
+                            number_to_move = second_die.get_number() - 1
+                            each_piece.move(number_to_move, board, pieces, first_die, second_die)
+                            next_turn()
+                            counter = 0
+                            dice_rolled = False
+                            break
+                        number_to_move = first_die.get_number() - 1
+                        each_piece.move(number_to_move, board, pieces, first_die, second_die)
+                        each_piece.taken_die = True
+                        break
+                    elif each_piece.taken_die == True:
+                        counter += 1
+                        number_to_move = second_die.get_number() - 1
+                        each_piece.move(number_to_move, board, pieces, first_die, second_die)
+                        each_piece.taken_die_again = True
+                        if each_piece.taken_die == True and each_piece.taken_die_again == True:
+                            next_turn()
+                            each_piece.taken_die = False
+                            each_piece.taken_die_again = False
+                            dice_rolled = False
+                            counter = 0
+                            break
+                        if counter == 2:
+                            next_turn()
+                            dice_rolled = False
+                            counter = 0
+                        each_piece.taken_die = False
+                        break
 
+    if next_player == "purple" and dice_rolled == True:
+        for each_piece in purple_pieces:
+            if  mouse_pos[0] >= each_piece.current_pos[0] and mouse_pos[0] <= each_piece.current_pos[0] + 40:
+                if mouse_pos[1] >= each_piece.current_pos[1] and mouse_pos[1] <= each_piece.current_pos[1] + 40:
+                    if each_piece.taken_die == False:
+                        counter += 1
+                        if counter == 2:
+                            number_to_move = second_die.get_number() - 1
+                            each_piece.move(number_to_move, board, pieces, first_die, second_die)
+                            next_turn()
+                            counter = 0
+                            dice_rolled = False
+                            break
+                        number_to_move = first_die.get_number() - 1
+                        each_piece.move(number_to_move, board, pieces, first_die, second_die)
+                        each_piece.taken_die = True
+                        break
+                    elif each_piece.taken_die == True:
+                        counter += 1
+                        number_to_move = second_die.get_number() - 1
+                        each_piece.move(number_to_move, board, pieces, first_die, second_die)
+                        each_piece.taken_die_again = True
+                        if each_piece.taken_die == True and each_piece.taken_die_again == True:
+                            next_turn()
+                            each_piece.taken_die = False
+                            each_piece.taken_die_again = False
+                            dice_rolled = False
+                            counter =  0
+                            break
+                        if counter == 2:
+                            next_turn()
+                            dice_rolled = False
+                            counter = 0
+                        each_piece.taken_die = False
+                        break
+
+    if next_player == "green" and dice_rolled == True:
+        for each_piece in green_pieces:
+            if  mouse_pos[0] >= each_piece.current_pos[0] and mouse_pos[0] <= each_piece.current_pos[0] + 40:
+                if mouse_pos[1] >= each_piece.current_pos[1] and mouse_pos[1] <= each_piece.current_pos[1] + 40:
+                    if each_piece.taken_die == False:
+                        counter += 1
+                        if counter == 2:
+                            number_to_move = second_die.get_number() - 1
+                            each_piece.move(number_to_move, board, pieces, first_die, second_die)
+                            next_turn()
+                            counter = 0
+                            dice_rolled = False
+                            break
+                        number_to_move = first_die.get_number() - 1
+                        each_piece.move(number_to_move, board, pieces, first_die, second_die)
+                        each_piece.taken_die = True
+                        break
+                    elif each_piece.taken_die == True:
+                        counter += 1
+                        number_to_move = second_die.get_number() - 1
+                        each_piece.move(number_to_move, board, pieces, first_die, second_die)
+                        each_piece.taken_die_again = True
+                        if each_piece.taken_die == True and each_piece.taken_die_again == True:
+                            next_turn()
+                            each_piece.taken_die = False
+                            each_piece.taken_die_again = False
+                            dice_rolled = False
+                            counter = 0
+                            break
+                        if counter == 2:
+                            next_turn()
+                            counter = 0
+                            dice_rolled = False
+                        each_piece.taken_die = False
+                        break
+
+next_turn()
 #Main loop
 running = True
 while running:
-    number = random.randint(1,6)
+    check_piece_home()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -115,12 +282,14 @@ while running:
         #  Dice roll
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = pygame.mouse.get_pos()
+            # next_turn()
             if 240 <= mouse_pos[0] <= 360 and 270 <= mouse_pos[1] <= 330:
-                first_die.number = random.randint(1, 6)
-                second_die.number = random.randint(1,6)
-                dice_sound.play()
+                if dice_rolled == False:
+                    first_die.number = random.randint(1, 6)
+                    second_die.number = random.randint(1,6)
+                    dice_rolled = True
+                    dice_sound.play()
             handle_piece_movements()
-            
 
 
     handle_all_blits()

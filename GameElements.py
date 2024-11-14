@@ -5,15 +5,18 @@ import random
 
 class piece:
     def __init__(self, color:str, init_pos:tuple, win: pygame.Surface, image:str, positions:list, sound: pygame.mixer.Sound):
-        self.color = pygame.Color(str(color))
+        self.color = color
         self.init_pos = init_pos
         self.win = win
-        self.image = pygame.image.load(str(image)).convert()
+        self.image = pygame.image.load(str(image)).convert_alpha()
         self.current_pos = self.init_pos
         self.position = positions
         self.moved = False
         self.sound = sound
         self.home = True
+        self.image.set_colorkey((255,255,255))
+        self.taken_die = False
+        self.taken_die_again = False
 
     def create_piece(self):
         if self.moved is False:
@@ -23,11 +26,16 @@ class piece:
             
 
 
-    def move(self, dice_number, background):
+    def move(self, dice_number, background, all_pieces, first_die, second_die):
         self.moved = True
-        tracking_list = self.position[0:dice_number]
+        tracking_list = self.position[:dice_number]
         for i in tracking_list:
             self.win.blit(background, (0,0))
+            for pieces in all_pieces:
+                for each_piece in pieces:
+                    each_piece.create_piece()
+            first_die.show_dice("Assets/images/1.png", "Assets/images/2.png", "Assets/images/3.png", "Assets/images/4.png", "Assets/images/5.png", "Assets/images/6.png")
+            second_die.show_dice("Assets/images/1.png", "Assets/images/2.png", "Assets/images/3.png", "Assets/images/4.png", "Assets/images/5.png", "Assets/images/6.png")
             time.sleep(0.05)
             self.win.blit(self.image, i)
             pygame.display.update()
@@ -40,6 +48,12 @@ class piece:
         except IndexError as i:
             print(f"{i} has occurred but program will run!")
 
+        def go_back_home(positions:list,sound:pygame.mixer.Sound):
+            self.current_pos = self.init_pos
+            self.position = positions
+            sound.play()
+
+
 
 
 class Dice:
@@ -47,6 +61,7 @@ class Dice:
         self.win = win
         self.init_pos = init_pos
         self.number = number
+        self.taken = False
     
     
     def show_dice(self, a, b, c, d, e, f):
