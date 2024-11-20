@@ -9,7 +9,7 @@ pygame.init()
 #I CHANGED THE DICE RANDINT NUMBERS 
 
 win = pygame.display.set_mode((700,600))
-pygame.display.set_caption("Kasy's Ludo Game")
+pygame.display.set_caption("Kasy's Ludo Game") 
 clock = pygame.time.Clock()
 
 #variables for the dice
@@ -23,6 +23,7 @@ dice_sound = mixer.Sound(os.path.join("Assets", "sounds","dice-on-a-wooden-floor
 kill_sound = mixer.Sound(os.path.join("Assets","sounds","thump-105302.mp3"))
 movement_sound = mixer.Sound(os.path.join("Assets","sounds","Token Movement.wav"))
 font = pygame.font.SysFont("comicsans", 16)
+movement_sound.set_volume(0.7)
 
 
 
@@ -89,9 +90,12 @@ def next_turn():
     current_player = (current_player + 1) % 4
 
 
+def is_mouse_on_piece(mouse_pos, piece):
+    return (mouse_pos[0] >= piece.current_pos[0] and mouse_pos[0] <= piece.current_pos[0] + 40 and
+            mouse_pos[1] >= piece.current_pos[1] and mouse_pos[1] <= piece.current_pos[1] + 40)
 
     
-pieces = [blue_pieces, yellow_pieces, green_pieces, purple_pieces]
+pieces = [blue_pieces, yellow_pieces, purple_pieces, green_pieces]
 
 def check_piece_home():
     for all_pieces in pieces:
@@ -118,157 +122,94 @@ def handle_all_blits():
     win.blit(demo_text, demo_text_rect)
     # pygame.display.update(text_rect)      
     
+def check_killed_pieces(each_piece: piece, pieces: list[list[piece]], current_pieces):
+    other_players = pieces
+    other_players.remove(current_pieces)
+    for i in other_players:
+        for j in i:
+            if each_piece.current_pos == j.current_pos:
+                j.go_back_home(kill_sound)
+                each_piece.off_board = True
+                break
 
+# def check_winner():
+#     for i in blue_pieces:
+#         if sel
 
 counter = 0
-def handle_piece_movements():
-    global counter, dice_rolled
-    if next_player == "blue" and dice_rolled == True:
-        for each_piece in blue_pieces:
-            if  mouse_pos[0] >= each_piece.current_pos[0] and mouse_pos[0] <= each_piece.current_pos[0] + 40:
-                if mouse_pos[1] >= each_piece.current_pos[1] and mouse_pos[1] <= each_piece.current_pos[1] + 40:
-                    if each_piece.home == True:
-                        if first_die.get_number() == 6 and second_die.get_number() != 6:
-                            each_piece.
-                    if each_piece.taken_die == False:         #normal movements when not in home
-                        counter += 1
-                        if counter == 2:
-                            number_to_move = second_die.get_number() - 1
-                            each_piece.move(number_to_move, board, pieces, first_die, second_die)
-                            next_turn()
-                            dice_rolled = False 
-                            counter = 0
-                            break
-                        number_to_move = first_die.get_number() - 1
-                        each_piece.move(number_to_move, board, pieces, first_die, second_die)
-                        each_piece.taken_die = True
-                        break
-                    elif each_piece.taken_die == True:
-                        counter += 1
-                        number_to_move = second_die.get_number() - 1
-                        each_piece.move(number_to_move, board, pieces, first_die, second_die)
-                        each_piece.taken_die_again = True
-                        if each_piece.taken_die == True and each_piece.taken_die_again == True:
-                            next_turn()
-                            each_piece.taken_die = False
-                            each_piece.taken_die_again = False
-                            dice_rolled = False
-                            counter = 0
-                            break
-                        if counter == 2:
-                            next_turn()
-                            dice_rolled = False
-                            counter = 0
-                        each_piece.taken_die = False
-                        break
+def handle_piece_movements():  
+    global counter, dice_rolled, mouse_pos
+    current_pieces = pieces[turns.index(next_player)]
 
-    if next_player == "yellow" and dice_rolled == True:
-        for each_piece in yellow_pieces:
-            if  mouse_pos[0] >= each_piece.current_pos[0] and mouse_pos[0] <= each_piece.current_pos[0] + 40:
-                if mouse_pos[1] >= each_piece.current_pos[1] and mouse_pos[1] <= each_piece.current_pos[1] + 40:
-                    if each_piece.taken_die == False:
-                        counter += 1
-                        if counter == 2:
-                            number_to_move = second_die.get_number() - 1
-                            each_piece.move(number_to_move, board, pieces, first_die, second_die)
-                            next_turn()
-                            counter = 0
+    if all(current_pieces) and (first_die.get_number() != 6 and  second_die.get_number() != 6):
+        next_turn()
+        dice_rolled = False
+        return
+    for each_piece in current_pieces:
+        if is_mouse_on_piece(mouse_pos, each_piece): 
+            if each_piece.home:
+                if all(current_pieces):
+                    # TEST 
+                    # if first_die.get_number() == 6 or second_die.get_number() == 6:
+                    if first_die.get_number() == 6 and second_die.get_number() != 6:
+                            each_piece.move(second_die.get_number(), board, pieces, first_die, second_die)
+                            # check_killed_pieces(each_piece, pieces, current_pieces)
                             dice_rolled = False
+                            next_turn()
                             break
-                        number_to_move = first_die.get_number() - 1
-                        each_piece.move(number_to_move, board, pieces, first_die, second_die)
+                    if first_die.get_number() != 6 and second_die.get_number() == 6:
+                            each_piece.move(first_die.get_number(), board, pieces, first_die, second_die)
+                            # check_killed_pieces(each_piece, pieces, current_pieces)
+                            dice_rolled = False
+                            next_turn()
+                            break
+                    if first_die.get_number() == 6 and second_die.get_number() == 6:
+                            counter += 1
+                            each_piece.move(1 ,board, pieces, first_die, second_die)
+                            # check_killed_pieces(each_piece, pieces, current_pieces)
+                            break
+                if counter == 1 and second_die.get_number() == 6:
+                    counter = 0
+                    each_piece.move(0, board, pieces, first_die, second_die)
+                    # check_killed_pieces(each_piece, pieces, current_pieces)
+                    dice_rolled = False
+                    next_turn()
+                    break
+                elif counter == 0 and first_die.get_number() == 6:
+                    counter += 1
+                    each_piece.move(0, board, pieces, first_die, second_die)
+                    # check_killed_pieces(each_piece, pieces, current_pieces)
+                    each_piece.taken_die = True
+                    break
+                else:
+                    print("You need a six to move this piece!!")
+                    break
+                # if piece is not at home movements
+            elif each_piece.home == False: 
+                if each_piece.taken_die == False: #if piece is moving for first time
+                    if counter == 0:
+                        counter += 1                        
+                        each_piece.move(first_die.get_number() -1 , board, pieces, first_die, second_die)
+                        # check_killed_pieces(each_piece, pieces, current_pieces)
                         each_piece.taken_die = True
                         break
-                    elif each_piece.taken_die == True:
-                        counter += 1
-                        number_to_move = second_die.get_number() - 1
-                        each_piece.move(number_to_move, board, pieces, first_die, second_die)
-                        each_piece.taken_die_again = True
-                        if each_piece.taken_die == True and each_piece.taken_die_again == True:
-                            next_turn()
-                            each_piece.taken_die = False
-                            each_piece.taken_die_again = False
-                            dice_rolled = False
-                            counter = 0
-                            break
-                        if counter == 2:
-                            next_turn()
-                            dice_rolled = False
-                            counter = 0
-                        each_piece.taken_die = False
-                        break
+                    elif counter == 1:
+                        each_piece.move(second_die.get_number(), board, pieces, first_die, second_die)
+                        # check_killed_pieces(each_piece, pieces, current_pieces)
+                        dice_rolled = False
+                        next_turn()
+                elif each_piece.taken_die == True:
+                    counter = 0
+                    each_piece.move(second_die.get_number() - 1, board, pieces, first_die, second_die)
+                    # check_killed_pieces(each_piece, pieces, current_pieces)
+                    each_piece.taken_die = False
+                    dice_rolled = False
+                    next_turn()
 
-    if next_player == "purple" and dice_rolled == True:
-        for each_piece in purple_pieces:
-            if  mouse_pos[0] >= each_piece.current_pos[0] and mouse_pos[0] <= each_piece.current_pos[0] + 40:
-                if mouse_pos[1] >= each_piece.current_pos[1] and mouse_pos[1] <= each_piece.current_pos[1] + 40:
-                    if each_piece.taken_die == False:
-                        counter += 1
-                        if counter == 2:
-                            number_to_move = second_die.get_number() - 1
-                            each_piece.move(number_to_move, board, pieces, first_die, second_die)
-                            next_turn()
-                            counter = 0
-                            dice_rolled = False
-                            break
-                        number_to_move = first_die.get_number() - 1
-                        each_piece.move(number_to_move, board, pieces, first_die, second_die)
-                        each_piece.taken_die = True
-                        break
-                    elif each_piece.taken_die == True:
-                        counter += 1
-                        number_to_move = second_die.get_number() - 1
-                        each_piece.move(number_to_move, board, pieces, first_die, second_die)
-                        each_piece.taken_die_again = True
-                        if each_piece.taken_die == True and each_piece.taken_die_again == True:
-                            next_turn()
-                            each_piece.taken_die = False
-                            each_piece.taken_die_again = False
-                            dice_rolled = False
-                            counter =  0
-                            break
-                        if counter == 2:
-                            next_turn()
-                            dice_rolled = False
-                            counter = 0
-                        each_piece.taken_die = False
-                        break
-
-    if next_player == "green" and dice_rolled == True:
-        for each_piece in green_pieces:
-            if  mouse_pos[0] >= each_piece.current_pos[0] and mouse_pos[0] <= each_piece.current_pos[0] + 40:
-                if mouse_pos[1] >= each_piece.current_pos[1] and mouse_pos[1] <= each_piece.current_pos[1] + 40:
-                    if each_piece.taken_die == False:
-                        counter += 1
-                        if counter == 2:
-                            number_to_move = second_die.get_number() - 1
-                            each_piece.move(number_to_move, board, pieces, first_die, second_die)
-                            next_turn()
-                            counter = 0
-                            dice_rolled = False
-                            break
-                        number_to_move = first_die.get_number() - 1
-                        each_piece.move(number_to_move, board, pieces, first_die, second_die)
-                        each_piece.taken_die = True
-                        break
-                    elif each_piece.taken_die == True:
-                        counter += 1
-                        number_to_move = second_die.get_number() - 1
-                        each_piece.move(number_to_move, board, pieces, first_die, second_die)
-                        each_piece.taken_die_again = True
-                        if each_piece.taken_die == True and each_piece.taken_die_again == True:
-                            next_turn()
-                            each_piece.taken_die = False
-                            each_piece.taken_die_again = False
-                            dice_rolled = False
-                            counter = 0
-                            break
-                        if counter == 2:
-                            next_turn()
-                            counter = 0
-                            dice_rolled = False
-                        each_piece.taken_die = False
-                        break
+                    # move_number = max(first_die.get_number(), second_die.get_number()) - 5
+                    # each_piece.move(move_number, board, pieces, first_die, second_die)
+                    # dice_rolled = False
+                    # next_turn()
 
 next_turn()
 #Main loop

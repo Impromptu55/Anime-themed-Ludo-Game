@@ -1,6 +1,5 @@
 import pygame
 import time
-import random
 
 
 class piece:
@@ -11,15 +10,26 @@ class piece:
         self.image = pygame.image.load(str(image)).convert_alpha()
         self.current_pos = self.init_pos
         self.position = positions
+        self.original_position = positions
         self.moved = False
         self.sound = sound
         self.home = True
         self.image.set_colorkey((255,255,255))
         self.taken_die = False
         self.taken_die_again = False
+        self.off_board = False
+
+    def __bool__(self):
+        if self.home == True:
+            return True
+        else:
+            return False
 
     def create_piece(self):
-        if self.moved is False:
+        if self.off_board == True:
+            self.win.blit(self.image, (1000,1000))
+            self.current_pos = (1000, 1000)
+        elif self.moved is False:
             self.win.blit(self.image, self.init_pos)
         elif self.moved is not False:
             self.win.blit(self.image, self.current_pos)
@@ -33,6 +43,8 @@ class piece:
             self.win.blit(background, (0,0))
             for pieces in all_pieces:
                 for each_piece in pieces:
+                    if each_piece == self:
+                        continue
                     each_piece.create_piece()
             first_die.show_dice("Assets/images/1.png", "Assets/images/2.png", "Assets/images/3.png", "Assets/images/4.png", "Assets/images/5.png", "Assets/images/6.png")
             second_die.show_dice("Assets/images/1.png", "Assets/images/2.png", "Assets/images/3.png", "Assets/images/4.png", "Assets/images/5.png", "Assets/images/6.png")
@@ -43,15 +55,15 @@ class piece:
             self.sound.play()
         try:
             self.current_pos = self.position[dice_number]
-            self.position = self.position[dice_number:]
+            self.position = self.position[dice_number+1:]
             self.sound.play()
         except IndexError as i:
             print(f"{i} has occurred but program will run!")
 
-        def go_back_home(positions:list,sound:pygame.mixer.Sound):
-            self.current_pos = self.init_pos
-            self.position = positions
-            sound.play()
+    def go_back_home(self,sound:pygame.mixer.Sound):
+        self.current_pos = self.init_pos
+        self.position = self.original_position
+        sound.play()
 
 
 
