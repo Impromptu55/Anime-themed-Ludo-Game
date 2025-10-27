@@ -6,7 +6,6 @@ from pygame import mixer
 from GameElements import piece, Dice  
 pygame.init()
 
-#I CHANGED THE DICE RANDINT NUMBERS 
 
 win = pygame.display.set_mode((700,600))
 pygame.display.set_caption("Kasy's Ludo Game") 
@@ -26,7 +25,7 @@ font = pygame.font.SysFont("comicsans", 16)
 movement_sound.set_volume(0.7)
 
 
-
+# All squares x and y positions on the board
 blue_positions = [(40,240),(80, 240), (120,240), (160,240), (200, 240),  (240, 200), (240,160), (240,120), (240,80), (240,40), (240,0), (280,0), #Blue to yellow
                  (320, 0), (320,40), (320,80), (320,120), (320,160), (320,200), (360,240), (400,240), (440,240), (480,240), (520,240),(560,240),(560,280), #yellow to purple
                  (560,320), (520,320), (480,320), (440,320), (400,320), (360,320), (320,360), (320,400), (320,440), (320,480), (320,520), (320,560), (280,560),  #purple to green 
@@ -50,6 +49,7 @@ green_positions = [(240,520), (240,480), (240,440), (240,400), (240,360), (200,3
 first_die = Dice(win, (240,270), number)
 second_die = Dice(win, (300,270), second_number)
 
+#instanciating all pieces to the piece class
 blue_piece1 = piece("blue", (40,40), win, os.path.join("Assets","images", "blue.png"), blue_positions, movement_sound)
 blue_piece2 = piece("blue", (40,120), win, os.path.join("Assets","images", "blue.png"), blue_positions, movement_sound)
 blue_piece3 = piece("blue", (120,40), win, os.path.join("Assets","images", "blue.png"), blue_positions, movement_sound)
@@ -70,15 +70,15 @@ purple_piece2 = piece("purple", (480,400), win, os.path.join("Assets", "images",
 purple_piece3 = piece("purple", (400,480), win, os.path.join("Assets", "images", "purple.png"), purple_positions, movement_sound)
 purple_piece4 = piece("purple", (480,480), win, os.path.join("Assets", "images", "purple.png"), purple_positions, movement_sound)
 
+# grouping all pieces by colour into seperate variables
 blue_pieces = [blue_piece1, blue_piece2, blue_piece3, blue_piece4]
 yellow_pieces = [yellow_piece1, yellow_piece2, yellow_piece3, yellow_piece4]
 green_pieces = [green_piece1,green_piece2,green_piece3,green_piece4]
 purple_pieces = [purple_piece1,purple_piece2, purple_piece3, purple_piece4]
 
-# all_pieces = []
 
-# blue_piece = piece("purple", (40,40), win, "purple.png", blue_positions, movement_sound)
 
+#variales to control turns
 turns = ["blue", "yellow", "purple", "green"]
 current_player = 0
 dice_rolled = False
@@ -98,6 +98,7 @@ def is_mouse_on_piece(mouse_pos, piece):
 pieces = [blue_pieces, yellow_pieces, purple_pieces, green_pieces]
 
 def check_piece_home():
+    #checks whether piece is at home
     for all_pieces in pieces:
         for each_piece in all_pieces:
             if each_piece.current_pos != each_piece.init_pos:
@@ -132,10 +133,8 @@ def check_killed_pieces(each_piece: piece, pieces: list[list[piece]], current_pi
                 each_piece.off_board = True
                 break
 
-# def check_winner():
-#     for i in blue_pieces:
-#         if sel
 
+# funtion for handling piece movements. The "check_killed_pieces" is not yet completed and still trying to figure it out hence the codes being commented out
 counter = 0
 def handle_piece_movements():  
     global counter, dice_rolled, mouse_pos
@@ -206,11 +205,7 @@ def handle_piece_movements():
                     dice_rolled = False
                     next_turn()
 
-                    # move_number = max(first_die.get_number(), second_die.get_number()) - 5
-                    # each_piece.move(move_number, board, pieces, first_die, second_die)
-                    # dice_rolled = False
-                    # next_turn()
-
+                    
 next_turn()
 #Main loop
 running = True
